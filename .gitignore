@@ -216,3 +216,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# 외부에서 clone/빌드하는 Rust piper-rs 런타임 (자체 git repo)
+piper-rs/
+
+# 대용량 모델 바이너리 (스크립트 주석대로 wget 으로 내려받음)
+ollama_basic/models/
+
+# 녹음/합성 등 생성·샘플 오디오
+ollama_basic/voice/
