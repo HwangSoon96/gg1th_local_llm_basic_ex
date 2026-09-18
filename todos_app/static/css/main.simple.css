@@ -1,0 +1,445 @@
+/* ===================================================================
+   나를 성장시키는 메모 — 메인 스타일시트
+
+   구성
+     1. 디자인 토큰 (색/간격/폰트를 변수로 관리)
+     2. 리셋
+     3. 레이아웃
+     4. 헤더
+     5. 카드 / 폼
+     6. 버튼
+     7. 할 일 목록
+     8. 반응형
+     9. 다크 모드
+    10. 접근성 (모션 최소화)
+   =================================================================== */
+
+
+/* === 1. 디자인 토큰 ================================================
+   색을 직접 쓰지 않고 변수로 빼두면, 나중에 톤을 바꿀 때
+   이 블럭만 고치면 전체가 따라 바뀝니다. 다크 모드도 같은 원리. */
+:root {
+  /* 색 */
+  --bg:            #f7f7f5;  /* 페이지 배경 */
+  --surface:       #ffffff;  /* 카드 배경 */
+  --text:          #1a1a1a;  /* 본문 (순수 #000은 눈이 아픕니다) */
+  --text-muted:    #6b6b6b;  /* 보조 텍스트 */
+  --border:        #e4e4e0;  /* 경계선 */
+  --border-strong: #d0d0ca;  /* 입력창 경계선 */
+
+  --accent:        #2f7d52;  /* 포인트 색 — 딱 1개만 씁니다 */
+  --accent-hover:  #276844;
+  --accent-soft:   #eaf3ee;  /* 포인트 색의 아주 옅은 버전 */
+  --danger:        #b3261e;  /* 삭제 등 되돌릴 수 없는 동작 */
+  --danger-soft:   #fdeceb;
+
+  /* 간격 — 4px 배수로 통일 */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  /* 모서리 */
+  --radius:    10px;
+  --radius-sm: 7px;
+
+  /* 그림자 */
+  --shadow:    0 1px 2px rgba(0, 0, 0, 0.04),
+               0 4px 12px rgba(0, 0, 0, 0.05);
+
+  /* 폰트 */
+  --font: 'Pretendard Variable', Pretendard, -apple-system,
+          BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto,
+          'Helvetica Neue', 'Apple SD Gothic Neo', 'Malgun Gothic',
+          sans-serif;
+
+  --max-width: 560px;
+}
+
+
+/* === 2. 리셋 ======================================================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font);
+  /* clamp(최소, 기준, 최대) — 화면 폭에 따라 글자가 부드럽게 커집니다 */
+  font-size: clamp(0.95rem, 0.92rem + 0.15vw, 1.05rem);
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  /* 한글은 단어 중간에서 줄바꿈되면 어색합니다 */
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 화면에는 안 보이지만 스크린리더는 읽는 텍스트 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 키보드 Tab으로 이동할 때만 테두리 표시 (마우스 클릭 시엔 안 나옴) */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+
+/* === 3. 레이아웃 =================================================== */
+main {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  /* 아이폰 노치 등 안전영역까지 고려한 좌우 여백 */
+  padding: var(--space-6) max(var(--space-4), env(safe-area-inset-left))
+           var(--space-6) max(var(--space-4), env(safe-area-inset-right));
+}
+
+
+/* === 4. 헤더 ======================================================= */
+.site-header {
+  margin-bottom: var(--space-5);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  text-decoration: none;
+  color: inherit;
+  width: fit-content;
+}
+
+/* 로고 자리 — 스톡 사진 대신 체크 아이콘을 넣었습니다 */
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: #fff;
+}
+
+.brand-name {
+  font-size: clamp(1.15rem, 1rem + 0.7vw, 1.45rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  /* 제목이 두 줄이 될 때 줄 길이를 고르게 맞춰줍니다 */
+  text-wrap: balance;
+}
+
+.brand-tagline {
+  margin-top: var(--space-2);
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  text-wrap: balance;
+}
+
+
+/* === 5. 카드 / 폼 ================================================== */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+  box-shadow: var(--shadow);
+}
+
+.task-form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: var(--space-3);
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+textarea::placeholder {
+  color: var(--text-muted);
+}
+
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  /* 테두리를 두껍게 하는 대신 그림자로 두께감 — 레이아웃이 안 흔들립니다 */
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* 체크박스 + 라벨 한 줄 */
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.925rem;
+}
+
+.check-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.form-actions .btn {
+  flex: 1;
+}
+
+
+/* === 6. 버튼 ======================================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* 손가락으로 누르기 충분한 높이 (접근성 권장 44px) */
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  font-family: inherit;
+  font-size: 0.975rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: var(--border-strong);
+}
+
+.btn-ghost:hover {
+  background: var(--bg);
+  color: var(--text);
+}
+
+
+/* === 7. 할 일 목록 ================================================= */
+.task-section {
+  margin-top: var(--space-6);
+}
+
+.section-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  margin-bottom: var(--space-3);
+}
+
+.task-list {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.15s ease;
+}
+
+/* 마지막 항목은 아래 선 제거 — 카드 테두리와 겹칩니다 */
+.task:last-child {
+  border-bottom: none;
+}
+
+.task:hover {
+  background: var(--bg);
+}
+
+.task-text {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 완료된 항목: 취소선 + 흐리게 */
+.task-text del {
+  color: var(--text-muted);
+  text-decoration-color: var(--text-muted);
+  text-decoration-thickness: 1.5px;
+}
+
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.task-actions form {
+  margin: 0;
+  padding: 0;
+}
+
+.todo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: var(--space-1) var(--space-3);
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--text-muted);
+  text-decoration: none;
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease,
+              border-color 0.15s ease;
+}
+
+.todo-btn:hover {
+  color: var(--text);
+  background: var(--surface);
+  border-color: var(--text-muted);
+}
+
+/* 삭제는 되돌릴 수 없으니 호버할 때만 위험한 색으로 */
+.todo-btn-danger:hover {
+  color: var(--danger);
+  background: var(--danger-soft);
+  border-color: var(--danger);
+}
+
+/* 할 일이 하나도 없을 때 — :has()로 빈 목록을 감지합니다.
+   템플릿 수정 없이 CSS만으로 빈 상태를 처리. */
+.task-list-main:not(:has(.task)) {
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+
+.task-list-main:not(:has(.task))::after {
+  content: "아직 등록한 할 일이 없어요";
+  color: var(--text-muted);
+  font-size: 0.925rem;
+}
+
+
+/* === 8. 반응형 ===================================================== */
+@media (max-width: 480px) {
+  main {
+    padding-top: var(--space-5);
+    padding-bottom: var(--space-5);
+  }
+
+  .task {
+    /* 좁은 화면에서는 내용과 버튼을 위아래로 분리 */
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .task-actions {
+    width: 100%;
+  }
+
+  /* 삭제 버튼은 form으로 감싸있으므로 form도 같이 늘어나야 합니다 */
+  .task-actions > form {
+    flex: 1;
+    display: flex;
+  }
+
+  .todo-btn {
+    flex: 1;
+    min-height: 38px;  /* 모바일에서는 터치 영역을 더 크게 */
+  }
+}
+
+
+/* === 9. 다크 모드 ==================================================
+   변수값만 바꿔치기하면 나머지 규칙은 그대로 따라옵니다. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:            #16171a;
+    --surface:       #1f2125;
+    --text:          #ededef;
+    --text-muted:    #9b9ba1;
+    --border:        #2c2e33;
+    --border-strong: #3b3e45;
+
+    --accent:        #5cba86;
+    --accent-hover:  #6fcb97;
+    --accent-soft:   #22392e;
+    --danger:        #f2938c;
+    --danger-soft:   #3a2422;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3),
+              0 4px 12px rgba(0, 0, 0, 0.25);
+  }
+
+  .brand-mark {
+    color: #16171a;  /* 밝은 배경 위 아이콘이므로 어둡게 */
+  }
+
+  .btn-primary {
+    color: #10231a;
+  }
+}
+
+
+/* === 10. 접근성 ====================================================
+   전정기관 장애가 있는 사용자를 위해 OS 설정을 존중합니다. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

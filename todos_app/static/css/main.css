@@ -1,0 +1,1253 @@
+/* ===================================================================
+   나를 성장시키는 메모 — 메인 스타일시트
+
+   구성
+     1. 디자인 토큰
+     2. 리셋 / 기본 타이포
+     3. 페이지 배경
+     4. 헤더 (sticky glass)
+     5. 레이아웃 / 페이지 제목
+     6. 입력 카드 (composer)
+     7. 체크박스
+     8. 버튼
+     9. 할 일 목록
+    10. 진행 현황 (CSS 카운터)
+    11. 등장 애니메이션
+    12. 반응형
+    13. 다크 모드
+    14. 접근성
+   =================================================================== */
+
+
+/* === 1. 디자인 토큰 ================================================
+   색/간격/폰트를 변수로 관리합니다. 다크 모드는 이 값만 바꿔치기. */
+:root {
+  /* 중립 베이스 — Stone 계열 (따뜻한 회색) */
+  --bg:            #fbfaf9;
+  --bg-tint:       #f4f2ef;  /* 페이지 상단 은은한 물듦 */
+  --surface:       #ffffff;
+  --surface-2:     #f7f6f4;  /* 한 단계 눌린 면 */
+  --border:        #e9e6e1;
+  --border-strong: #d8d4cd;
+
+  --text:          #1c1b19;  /* 순수 검정 대신 오프블랙 */
+  --text-2:        #57534e;
+  --text-3:        #6f6a63;  /* WCAG AA 통과하도록 조정 */
+
+  /* 포인트 색 — Emerald 계열 하나만 사용 */
+  --accent:        #047857;
+  --accent-hover:  #036249;
+  --accent-ink:    #ffffff;  /* 포인트 위에 얹는 글자색 */
+  --accent-tint:   #edf6f2;
+  --accent-ring:   rgba(4, 120, 87, 0.16);
+
+  --danger:        #b3261e;
+  --danger-tint:   #fdeceb;
+
+  /* 간격 — 4px 배수 */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  /* 모서리 */
+  --radius-lg: 16px;
+  --radius:    12px;
+  --radius-sm: 8px;
+
+  /* 그림자 — 배경 색조에 맞춰 살짝 따뜻하게 틴트 */
+  --shadow-sm: 0 1px 2px rgba(28, 25, 23, 0.05);
+  --shadow:    0 1px 3px rgba(28, 25, 23, 0.06),
+               0 8px 24px -12px rgba(28, 25, 23, 0.12);
+  --shadow-lg: 0 2px 6px rgba(28, 25, 23, 0.06),
+               0 16px 40px -16px rgba(28, 25, 23, 0.18);
+
+  --font: 'Pretendard Variable', Pretendard, -apple-system,
+          BlinkMacSystemFont, system-ui, 'Segoe UI', Roboto,
+          'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+
+  /* 부드러운 감속 곡선 — 기본 ease보다 자연스럽습니다 */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --max-width: 640px;
+  --header-h:  60px;
+}
+
+
+/* === 2. 리셋 / 기본 타이포 ========================================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font);
+  font-size: clamp(0.95rem, 0.92rem + 0.15vw, 1.0625rem);
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  /* 한글은 단어 중간에서 끊기면 어색합니다 */
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100dvh;
+}
+
+/* 화면엔 안 보이지만 스크린리더는 읽는 텍스트 */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 키보드 Tab 이동 시에만 표시 (마우스 클릭 땐 안 뜸) */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+
+/* === 3. 페이지 배경 ================================================
+   상단에만 아주 옅은 그라데이션 하나. (뷰포트당 1개까지만 —
+   여러 겹 쌓으면 그게 요즘 제일 흔한 AI 티입니다) */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 380px;
+  background: linear-gradient(to bottom, var(--bg-tint), transparent);
+  pointer-events: none;
+  z-index: -1;
+}
+
+
+/* === 4. 헤더 (sticky glass) ========================================
+   스크롤해도 상단에 붙어 따라오고, 뒤 내용이 비쳐 보입니다. */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid transparent;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+/* backdrop-filter를 지원할 때만 유리 효과 — 미지원 브라우저는 불투명 배경 */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .site-header {
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    backdrop-filter: blur(12px) saturate(180%);
+  }
+}
+
+.header-inner {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 max(var(--space-5), env(safe-area-inset-left))
+           0 max(var(--space-5), env(safe-area-inset-right));
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  text-decoration: none;
+  color: inherit;
+  width: fit-content;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 2px 8px -2px var(--accent-ring);
+  transition: transform 0.35s var(--ease);
+}
+
+.brand:hover .brand-mark {
+  transform: rotate(-8deg) scale(1.06);
+}
+
+.brand-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+
+/* === 5. 레이아웃 / 페이지 제목 ===================================== */
+main {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: var(--space-6) max(var(--space-5), env(safe-area-inset-left))
+           var(--space-7) max(var(--space-5), env(safe-area-inset-right));
+}
+
+.page-intro {
+  margin-bottom: var(--space-5);
+}
+
+/* 툴 화면이라 과한 히어로 크기는 피하고 적당한 존재감만 */
+.page-title {
+  font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.25;
+  text-wrap: balance;
+  max-width: 20ch;
+}
+
+.page-sub {
+  margin-top: var(--space-2);
+  color: var(--text-3);
+  font-size: 0.9375rem;
+  text-wrap: balance;
+}
+
+/* 수정 화면의 "목록으로" */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+  color: var(--text-3);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.15s ease, gap 0.2s var(--ease);
+}
+
+.back-link:hover {
+  color: var(--text);
+  gap: var(--space-2);
+}
+
+
+/* === 6. 입력 카드 (composer) ======================================= */
+.composer {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.3s var(--ease);
+}
+
+/* 입력 중일 때 카드 전체가 살짝 떠오릅니다 */
+.composer:focus-within {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-lg);
+}
+
+textarea {
+  display: block;
+  width: 100%;
+  min-height: 104px;
+  padding: var(--space-4) var(--space-4) var(--space-2);
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  resize: none;  /* 카드 모양이 깨지지 않도록 */
+}
+
+textarea:focus {
+  outline: none;  /* 카드 테두리가 대신 반응합니다 */
+}
+
+textarea::placeholder {
+  color: var(--text-3);
+}
+
+.composer-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+}
+
+.form-actions .btn {
+  flex: 1;
+}
+
+
+/* === 7. 체크박스 ===================================================
+   기본 체크박스는 브라우저마다 생김새가 달라서 직접 그립니다.
+   진짜 input은 숨기되 접근성(키보드/스크린리더)은 유지. */
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-4) var(--space-2);
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.9375rem;
+}
+
+.check-row input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.check-box {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 6px;
+  background: var(--surface);
+  color: transparent;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+              color 0.15s ease, transform 0.2s var(--ease);
+}
+
+.check-row:hover .check-box {
+  border-color: var(--accent);
+}
+
+.check-row input:checked + .check-box {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* 체크되는 순간 살짝 튕기는 느낌 */
+.check-row input:checked + .check-box {
+  animation: pop 0.25s var(--ease);
+}
+
+/* 키보드로 이동했을 때 표시 */
+.check-row input:focus-visible + .check-box {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.check-row input:checked ~ .check-label {
+  color: var(--text-3);
+}
+
+@keyframes pop {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
+}
+
+
+/* === 8. 버튼 ======================================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 var(--space-5);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+              color 0.15s ease, transform 0.15s var(--ease),
+              box-shadow 0.2s ease;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 1px 2px var(--accent-ring);
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 4px 12px -4px var(--accent-ring);
+}
+
+.btn-ghost {
+  background: var(--surface);
+  color: var(--text-2);
+  border-color: var(--border-strong);
+}
+
+.btn-ghost:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+
+/* === 9. 할 일 목록 ================================================= */
+.task-section {
+  margin-top: var(--space-7);
+}
+
+.section-title {
+  grid-area: title;
+  align-self: baseline;
+  padding-left: var(--space-1);
+  margin-bottom: var(--space-3);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-3);
+  letter-spacing: 0.02em;
+}
+
+.task-list {
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.15s ease;
+}
+
+.task:last-child {
+  border-bottom: none;
+}
+
+.task:hover {
+  background: var(--surface-2);
+}
+
+.task-text {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9688rem;
+}
+
+/* 완료된 항목 — 취소선 + 흐리게 */
+.task.is-done .task-text {
+  color: var(--text-3);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--text-3) 55%, transparent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
+}
+
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.task-actions form {
+  display: flex;
+  margin: 0;
+  padding: 0;
+}
+
+.todo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 var(--space-3);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--text-2);
+  text-decoration: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease,
+              border-color 0.15s ease;
+}
+
+.todo-btn:hover {
+  color: var(--text);
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+}
+
+/* 삭제는 되돌릴 수 없으니 호버할 때만 위험한 색으로 */
+.todo-btn-danger:hover {
+  color: var(--danger);
+  background: var(--danger-tint);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+}
+
+/* 마우스가 있는 넓은 화면에서만 버튼을 숨겼다가 호버 시 보여줍니다.
+   목록이 깔끔해집니다. 터치 기기·좁은 화면에서는 항상 보입니다. */
+@media (hover: hover) and (pointer: fine) and (min-width: 481px) {
+  .task-actions {
+    opacity: 0;
+    transform: translateX(4px);
+    transition: opacity 0.18s ease, transform 0.25s var(--ease);
+  }
+
+  .task:hover .task-actions,
+  .task:focus-within .task-actions {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* 할 일이 없을 때 — :has()로 빈 목록을 감지해 CSS만으로 처리 */
+.task-list-main:not(:has(.task)) {
+  padding: var(--space-7) var(--space-4);
+  text-align: center;
+}
+
+.task-list-main:not(:has(.task))::after {
+  content: "아직 등록한 할 일이 없어요";
+  color: var(--text-3);
+  font-size: 0.9375rem;
+}
+
+
+/* === 10. 진행 현황 (CSS 카운터) ====================================
+   "3개 중 1개 완료"를 자바스크립트나 서버 수정 없이 셉니다.
+   완료 항목은 <del>을 포함하므로 :has(del)로 구분. */
+.task-list-main {
+  counter-reset: total 0 done 0;
+}
+
+.task-list-main .task {
+  counter-increment: total;
+}
+
+.task-list-main .task.is-done {
+  counter-increment: total done;
+}
+
+.task-stat {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;  /* 숫자 폭 고정 — 흔들림 방지 */
+  white-space: nowrap;
+}
+
+/* CSS 카운터는 DOM 순서대로 셈니다. 그래서 통계 문구를
+   목록 "뒤"에 두고, grid로 제목 옆자리에 배치합니다. */
+.task-section {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "title stat"
+    "list  list";
+}
+
+.task-list { grid-area: list; }
+
+.task-stat {
+  grid-area: stat;
+  align-self: baseline;
+  padding-right: var(--space-1);
+  margin-bottom: var(--space-3);
+  text-align: right;
+}
+
+.task-stat::after {
+  content: counter(total) "개 중 " counter(done) "개 완료";
+}
+
+/* 항목이 하나도 없으면 통계 문구를 숨깁니다 */
+.task-list-main:not(:has(.task)) ~ .task-stat {
+  display: none;
+}
+
+
+/* === 11. 등장 애니메이션 ===========================================
+   목록이 순서대로 부드럽게 나타납니다. 이 화면의 시그니처 모션. */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.page-intro,
+.composer,
+.task-section {
+  animation: rise 0.5s var(--ease) backwards;
+}
+
+.composer     { animation-delay: 0.06s; }
+.task-section { animation-delay: 0.12s; }
+
+/* 항목마다 조금씩 늦게 — 최대 8번째까지만 (긴 목록이 느려 보이지 않게) */
+.task { animation: rise 0.45s var(--ease) backwards; }
+.task:nth-child(1) { animation-delay: 0.16s; }
+.task:nth-child(2) { animation-delay: 0.20s; }
+.task:nth-child(3) { animation-delay: 0.24s; }
+.task:nth-child(4) { animation-delay: 0.28s; }
+.task:nth-child(5) { animation-delay: 0.32s; }
+.task:nth-child(6) { animation-delay: 0.36s; }
+.task:nth-child(7) { animation-delay: 0.40s; }
+.task:nth-child(n+8) { animation-delay: 0.44s; }
+
+/* 페이지 전환을 부드럽게 (Chrome 126+ / 미지원 브라우저는 무시) */
+@view-transition {
+  navigation: auto;
+}
+
+
+/* === 12. 반응형 ==================================================== */
+@media (max-width: 480px) {
+  :root {
+    --header-h: 54px;
+  }
+
+  main {
+    padding-top: var(--space-5);
+  }
+
+  .composer-foot .btn {
+    flex: 1;  /* 좁은 화면에서는 버튼을 꽉 채웁니다 */
+  }
+
+  .task {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .task-actions {
+    width: 100%;
+  }
+
+  .task-actions > form {
+    flex: 1;
+  }
+
+  .todo-btn {
+    flex: 1;
+    min-height: 36px;  /* 터치 영역 확보 */
+  }
+}
+
+
+/* === 13. 다크 모드 =================================================
+   변수값만 교체하면 나머지 규칙이 그대로 따라옵니다. */
+/* 시스템이 어두울 때 (사용자가 직접 고르지 않은 경우만) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:            #131211;
+    --bg-tint:       #1a1917;
+    --surface:       #1c1b19;
+    --surface-2:     #232220;
+    --border:        #2c2a27;
+    --border-strong: #3d3a36;
+
+    --text:          #f2f0ed;
+    --text-2:        #b5afa7;
+    --text-3:        #8a847c;
+
+    --accent:        #34d399;
+    --accent-hover:  #4ade9f;
+    --accent-ink:    #0b2019;   /* 밝은 초록 위에는 어두운 글자 */
+    --accent-tint:   #17302a;
+    --accent-ring:   rgba(52, 211, 153, 0.22);
+
+    --danger:        #f2938c;
+    --danger-tint:   #35211f;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --shadow:    0 1px 3px rgba(0, 0, 0, 0.4),
+                 0 8px 24px -12px rgba(0, 0, 0, 0.55);
+    --shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.45),
+                 0 16px 40px -16px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* 사용자가 직접 어두운 테마를 고른 경우 */
+:root[data-theme="dark"] {
+    --bg:            #131211;
+    --bg-tint:       #1a1917;
+    --surface:       #1c1b19;
+    --surface-2:     #232220;
+    --border:        #2c2a27;
+    --border-strong: #3d3a36;
+
+    --text:          #f2f0ed;
+    --text-2:        #b5afa7;
+    --text-3:        #8a847c;
+
+    --accent:        #34d399;
+    --accent-hover:  #4ade9f;
+    --accent-ink:    #0b2019;   /* 밝은 초록 위에는 어두운 글자 */
+    --accent-tint:   #17302a;
+    --accent-ring:   rgba(52, 211, 153, 0.22);
+
+    --danger:        #f2938c;
+    --danger-tint:   #35211f;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --shadow:    0 1px 3px rgba(0, 0, 0, 0.4),
+                 0 8px 24px -12px rgba(0, 0, 0, 0.55);
+    --shadow-lg: 0 2px 6px rgba(0, 0, 0, 0.45),
+                 0 16px 40px -16px rgba(0, 0, 0, 0.6);
+}
+
+/* === 14. 접근성 ====================================================
+   전정기관 장애가 있는 사용자를 위해 OS 설정을 존중합니다. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  @view-transition {
+    navigation: none;
+  }
+}
+
+
+/* ===================================================================
+   15. 인터랙션 레이어 (app.js가 켜졌을 때)
+   =================================================================== */
+
+/* === 헤더 도구 ===================================================== */
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.header-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  color: var(--text-2);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease,
+              border-color 0.15s ease;
+}
+
+.icon-btn:hover {
+  color: var(--text);
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+/* 테마에 따라 해/달 아이콘 교체 */
+.icon-moon { display: none; }
+:root[data-theme="dark"] .icon-sun { display: none; }
+:root[data-theme="dark"] .icon-moon { display: block; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .icon-sun { display: none; }
+  :root:not([data-theme="light"]) .icon-moon { display: block; }
+}
+
+
+/* === 진행률 링 ===================================================== */
+.progress-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  margin-right: var(--space-1);
+}
+
+.progress-ring svg {
+  transform: rotate(-90deg);  /* 12시 방향에서 시작 */
+}
+
+.ring-track,
+.ring-fill {
+  fill: none;
+  stroke-width: 3;
+}
+
+.ring-track { stroke: var(--border); }
+
+.ring-fill {
+  stroke: var(--accent);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.55s var(--ease), stroke 0.3s ease;
+}
+
+.ring-label {
+  position: absolute;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 전부 끝내면 링이 살짝 빛납니다 */
+.progress-ring.is-complete .ring-fill {
+  filter: drop-shadow(0 0 4px var(--accent-ring));
+}
+
+.progress-ring.is-complete .ring-label { color: var(--accent); }
+
+
+/* === 완료 토글 ===================================================== */
+.toggle-form { display: flex; }
+
+.toggle {
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  flex-shrink: 0;
+  padding: 0;
+  color: transparent;
+  background: var(--surface);
+  border: 1.5px solid var(--border-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease,
+              color 0.18s ease, transform 0.2s var(--ease);
+}
+
+.toggle:hover {
+  border-color: var(--accent);
+  transform: scale(1.08);
+}
+
+.task.is-done .toggle {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent);
+  animation: pop 0.28s var(--ease);
+}
+
+/* 완료 순간 취소선이 왼쪽에서 그어집니다 */
+@keyframes strike {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+
+.task-text.strike-in {
+  animation: strike 0.32s var(--ease);
+}
+
+/* 이름 바꾸는 중 */
+.task-text[contenteditable] {
+  outline: none;
+  cursor: text;
+}
+
+.task.is-editing {
+  background: var(--accent-tint);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.task.is-editing .task-text {
+  text-decoration: none;
+  color: var(--text);
+}
+
+/* 키보드(J/K)로 고른 항목 */
+.task.is-focused {
+  background: var(--surface-2);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+/* JS가 켜진 경우에만 텍스트가 눌리는 느낌을 줍니다 */
+.js-on .task-text {
+  cursor: text;
+  border-radius: var(--radius-sm);
+}
+
+.task-dot {
+  width: 5px;
+  height: 5px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--border-strong);
+}
+
+.task.is-done .task-dot { background: var(--accent); }
+
+
+/* === 필터 ========================================================== */
+.filters {
+  grid-area: filters;
+  display: flex;
+  gap: var(--space-1);
+  margin-bottom: var(--space-3);
+}
+
+.filter-btn {
+  padding: var(--space-1) var(--space-3);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-3);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease,
+              border-color 0.15s ease;
+}
+
+.filter-btn:hover { color: var(--text); background: var(--surface-2); }
+
+.filter-btn.is-on {
+  color: var(--accent);
+  background: var(--accent-tint);
+  border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+/* 필터가 걸린 목록 배치 — 제목/통계 아래에 필터 줄이 들어갑니다 */
+.task-section:has(.filters) {
+  grid-template-areas:
+    "title   stat"
+    "filters filters"
+    "list    list";
+}
+
+.task { transition: background-color 0.15s ease, box-shadow 0.15s ease; }
+
+.task.is-hidden { display: none; }
+
+/* 필터 결과가 비었을 때 */
+.task-list-main.is-filtered-empty::after {
+  content: "여기엔 아무것도 없어요";
+  display: block;
+  padding: var(--space-6) var(--space-4);
+  color: var(--text-3);
+  font-size: 0.9375rem;
+  text-align: center;
+}
+
+/* 삭제되며 접히는 중 */
+.task.is-removing {
+  overflow: hidden;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  transition: height 0.26s var(--ease), opacity 0.2s ease,
+              padding 0.26s var(--ease);
+}
+
+
+/* === 입력창 힌트 =================================================== */
+.composer-foot {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.composer-hint {
+  display: flex;
+  gap: 3px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.composer:focus-within .composer-hint { opacity: 1; }
+
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  font-family: inherit;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  line-height: 1.5;
+}
+
+.hint-bar {
+  margin-top: var(--space-5);
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--text-3);
+}
+
+/* JS가 꺼져 있으면 단축키 안내와 필터는 의미가 없으니 숨깁니다 */
+html:not(.js-on) .hint-bar,
+html:not(.js-on) .filters,
+html:not(.js-on) .composer-hint,
+html:not(.js-on) .header-tools { display: none; }
+
+
+/* === 토스트 ======================================================== */
+.toast-region {
+  position: fixed;
+  left: 50%;
+  bottom: max(var(--space-5), env(safe-area-inset-bottom));
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+  font-size: 0.875rem;
+  color: var(--toast-ink);
+  background: var(--toast-bg);
+  border-radius: 999px;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transform: translateY(12px) scale(0.97);
+  transition: opacity 0.25s ease, transform 0.35s var(--ease);
+  pointer-events: auto;
+}
+
+.toast.is-in  { opacity: 1; transform: none; }
+.toast.is-out { opacity: 0; transform: translateY(8px) scale(0.97); }
+
+.toast-action {
+  padding: var(--space-1) var(--space-3);
+  font-family: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--toast-accent);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--toast-ink) 22%, transparent);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.toast-action:hover {
+  background: color-mix(in srgb, var(--toast-ink) 12%, transparent);
+}
+
+
+/* === 명령 팔레트 / 시트 ============================================ */
+.palette,
+.sheet {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  max-width: 100vw;
+  max-height: 100dvh;
+}
+
+.palette::backdrop,
+.sheet::backdrop {
+  background: color-mix(in srgb, #0a0a0a 45%, transparent);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: fade 0.2s ease;
+}
+
+@keyframes fade { from { opacity: 0; } }
+
+.palette {
+  margin: 12vh auto auto;
+  width: min(540px, calc(100vw - 2rem));
+}
+
+.palette-box,
+.sheet-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: pop-in 0.26s var(--ease);
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+}
+
+.palette-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-3);
+}
+
+.palette-input {
+  flex: 1;
+  min-width: 0;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  outline: none;
+}
+
+.palette-input::placeholder { color: var(--text-3); }
+
+.palette-list {
+  list-style: none;
+  max-height: 46vh;
+  overflow-y: auto;
+  padding: var(--space-2);
+}
+
+.palette-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  font-size: 0.9062rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.palette-item.is-on { background: var(--accent-tint); color: var(--accent); }
+
+.palette-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.palette-hint {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+
+.palette-item.is-on .palette-hint { color: var(--accent); }
+
+.palette-empty {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--text-3);
+  font-size: 0.9062rem;
+}
+
+.sheet {
+  margin: auto;
+  width: min(380px, calc(100vw - 2rem));
+}
+
+.sheet-box { padding: var(--space-5); }
+
+.sheet-title {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-4);
+}
+
+.shortcut-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3) var(--space-4);
+  align-items: center;
+  margin-bottom: var(--space-5);
+  font-size: 0.875rem;
+}
+
+.shortcut-list dt { display: flex; gap: 3px; }
+.shortcut-list dd { color: var(--text-2); }
+
+.sheet-box .btn { width: 100%; }
+
+
+/* === 테마 전환 와이프 ==============================================
+   기본 크로스페이드를 끄고, 새 테마만 원형으로 번지게 합니다. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+.theme-switching::view-transition-old(root) { z-index: 1; }
+.theme-switching::view-transition-new(root) { z-index: 2; }
+
+
+/* === 토스트 색 토큰 ================================================ */
+:root {
+  --toast-bg:     #1c1b19;
+  --toast-ink:    #f7f6f4;
+  --toast-accent: #6ee7b7;
+}
+
+:root[data-theme="dark"] {
+  --toast-bg:     #2c2a27;
+  --toast-ink:    #f2f0ed;
+  --toast-accent: #34d399;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --toast-bg:     #2c2a27;
+    --toast-ink:    #f2f0ed;
+    --toast-accent: #34d399;
+  }
+}
+
+
+/* === 모바일 ======================================================== */
+@media (max-width: 480px) {
+  .brand-name { font-size: 0.875rem; }
+  .palette { margin-top: 8vh; }
+  .toast-region { width: calc(100vw - 2rem); }
+  .toast { width: 100%; }
+}

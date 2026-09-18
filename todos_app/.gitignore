@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# 로컬 데이터베이스 — 각자 실행하면 자동 생성됩니다
+*.sqlite3
+
+# 외부에서 받아온 참고 자료 (lidge-jun/ima2-gen)
+.ref/
+
+# 에이전트 세션 파일
+.gjc/
